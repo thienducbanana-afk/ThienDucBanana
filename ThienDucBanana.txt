@@ -3523,7 +3523,7 @@ if _G.FastAttack then
 		return v1766;
 	end)();
 end
-local v52 = v3:Window("Rubu Roblox", "");
+local v52 = v3:Window("ThienDuc-Banana", "");
 local v53 = v52:T("Tab Status", "rbxassetid://74123756643311");
 local v54 = v52:T("Tab General", "rbxassetid://74123756643311");
 local v55 = v52:T("Setting Other", "rbxassetid://74123756643311");
