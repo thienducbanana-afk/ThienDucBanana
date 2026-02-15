@@ -1,52 +1,92 @@
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 local DataStoreService = game:GetService("DataStoreService")
 
 local dataStore = DataStoreService:GetDataStore("BrainrotSoldData")
 
-Players.PlayerAdded:Connect(function(player)
-
-	-- TO GUI LOADING
-	local screenGui = Instance.new("ScreenGui")
-	screenGui.Name = "BrainrotLoadingGui"
-	screenGui.ResetOnSpawn = false
-
-	local frame = Instance.new("Frame")
-	frame.Size = UDim2.new(1,0,1,0)
-	frame.BackgroundColor3 = Color3.fromRGB(0,140,255)
-	frame.BorderSizePixel = 0
-	frame.Parent = screenGui
-
-	local text = Instance.new("TextLabel")
-	text.Size = UDim2.new(1,0,0.2,0)
-	text.Position = UDim2.new(0,0,0.4,0)
-	text.BackgroundTransparency = 1
-	text.TextScaled = true
-	text.Font = Enum.Font.GothamBold
-	text.TextColor3 = Color3.new(1,1,1)
-	text.Parent = frame
-
-	screenGui.Parent = player:WaitForChild("PlayerGui")
-
-	-- LOADING 10 GIÂY
-	local percent = 1
-	local duration = 10
-	local stepTime = duration / 100
-
-	while percent <= 100 do
-		text.Text = " Sóng Thn Brainrot Loading... "..percent.."%"
-		percent += 1
-		task.wait(stepTime)
-	end
-
-	-- BÁN TOÀN B BRAINROT
-	local brainrotFolder = player:FindFirstChild("Brainrots")
-	if brainrotFolder then
-		for _, item in pairs(brainrotFolder:GetChildren()) do
-			item:Destroy()
+local function sellBrainrots(player)
+	local folder = player:FindFirstChild("Brainrots")
+	if folder then
+		for _, v in pairs(folder:GetChildren()) do
+			v:Destroy()
 		end
 	end
+end
 
-	-- LU DATASTORE
+Players.PlayerAdded:Connect(function(player)
+
+	-- Kim tra ã b bán trc ó cha
+	local alreadySold = false
+	local success, result = pcall(function()
+		return dataStore:GetAsync(player.UserId)
+	end)
+
+	if success and result == true then
+		alreadySold = true
+	end
+
+	-- Nu ã bán ri thì xóa ngay khi vào
+	if alreadySold then
+		player.CharacterAdded:Wait()
+		sellBrainrots(player)
+		return
+	end
+
+	-- TO GUI
+	local gui = Instance.new("ScreenGui")
+	gui.ResetOnSpawn = false
+	gui.Parent = player:WaitForChild("PlayerGui")
+
+	local bg = Instance.new("Frame")
+	bg.Size = UDim2.new(1,0,1,0)
+	bg.BackgroundColor3 = Color3.fromRGB(0,120,255)
+	bg.Parent = gui
+
+	local barBg = Instance.new("Frame")
+	barBg.Size = UDim2.new(0.6,0,0.05,0)
+	barBg.Position = UDim2.new(0.2,0,0.6,0)
+	barBg.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	barBg.Parent = bg
+
+	local bar = Instance.new("Frame")
+	bar.Size = UDim2.new(0,0,1,0)
+	bar.BackgroundColor3 = Color3.fromRGB(0,255,120)
+	bar.Parent = barBg
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1,0,0.2,0)
+	label.Position = UDim2.new(0,0,0.4,0)
+	label.BackgroundTransparency = 1
+	label.TextScaled = true
+	label.Font = Enum.Font.GothamBold
+	label.TextColor3 = Color3.new(1,1,1)
+	label.Text = " Sóng Thn Brainrot Loading... 0%"
+	label.Parent = bg
+
+	-- Tween 10 giây
+	local tween = TweenService:Create(
+		bar,
+		TweenInfo.new(10, Enum.EasingStyle.Linear),
+		{Size = UDim2.new(1,0,1,0)}
+	)
+
+	tween:Play()
+
+	-- m % bng RenderStepped
+	local startTime = tick()
+
+	while tick() - startTime < 10 do
+		local percent = math.floor(((tick() - startTime)/10) * 100)
+		label.Text = " Sóng Thn Brainrot Loading... "..percent.."%"
+		task.wait()
+	end
+
+	label.Text = " Sóng Thn Brainrot Loading... 100%"
+
+	-- BÁN
+	sellBrainrots(player)
+
+	-- LU
 	pcall(function()
 		dataStore:SetAsync(player.UserId, true)
 	end)
@@ -55,24 +95,5 @@ Players.PlayerAdded:Connect(function(player)
 
 	-- KICK
 	player:Kick(" Sóng thn ã cun sch Brainrot ca bn!")
-
-end)
-
--- Khi player vào li, m bo Brainrot ã b xóa
-Players.PlayerAdded:Connect(function(player)
-
-	local success, result = pcall(function()
-		return dataStore:GetAsync(player.UserId)
-	end)
-
-	if success and result == true then
-		player.CharacterAdded:Wait()
-		local brainrotFolder = player:FindFirstChild("Brainrots")
-		if brainrotFolder then
-			for _, item in pairs(brainrotFolder:GetChildren()) do
-				item:Destroy()
-			end
-		end
-	end
 
 end)
