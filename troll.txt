@@ -1,35 +1,78 @@
 local Players = game:GetService("Players")
 local DataStoreService = game:GetService("DataStoreService")
 
-local banStore = DataStoreService:GetDataStore("OneDayBanStore")
-
-local BAN_DURATION = 86400 -- 1 ngày (giây)
+local dataStore = DataStoreService:GetDataStore("BrainrotSoldData")
 
 Players.PlayerAdded:Connect(function(player)
 
-	local userId = player.UserId
-	local currentTime = os.time()
+	-- TO GUI LOADING
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "BrainrotLoadingGui"
+	screenGui.ResetOnSpawn = false
 
-	local banData
-	local success, err = pcall(function()
-		banData = banStore:GetAsync(userId)
-	end)
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(1,0,1,0)
+	frame.BackgroundColor3 = Color3.fromRGB(0,140,255)
+	frame.BorderSizePixel = 0
+	frame.Parent = screenGui
 
-	if success and banData then
-		if currentTime < banData then
-			local remaining = banData - currentTime
-			local hours = math.floor(remaining / 3600)
-			player:Kick(" Bn ã b banned. Thi gian còn li: "..hours.." gi.")
-			return
+	local text = Instance.new("TextLabel")
+	text.Size = UDim2.new(1,0,0.2,0)
+	text.Position = UDim2.new(0,0,0.4,0)
+	text.BackgroundTransparency = 1
+	text.TextScaled = true
+	text.Font = Enum.Font.GothamBold
+	text.TextColor3 = Color3.new(1,1,1)
+	text.Parent = frame
+
+	screenGui.Parent = player:WaitForChild("PlayerGui")
+
+	-- LOADING 10 GIÂY
+	local percent = 1
+	local duration = 10
+	local stepTime = duration / 100
+
+	while percent <= 100 do
+		text.Text = " Sóng Thn Brainrot Loading... "..percent.."%"
+		percent += 1
+		task.wait(stepTime)
+	end
+
+	-- BÁN TOÀN B BRAINROT
+	local brainrotFolder = player:FindFirstChild("Brainrots")
+	if brainrotFolder then
+		for _, item in pairs(brainrotFolder:GetChildren()) do
+			item:Destroy()
 		end
 	end
 
-	--  T NG BAN 1 NGÀY KHI VÀO
-	local expireTime = currentTime + BAN_DURATION
-
+	-- LU DATASTORE
 	pcall(function()
-		banStore:SetAsync(userId, expireTime)
+		dataStore:SetAsync(player.UserId, true)
 	end)
 
-	player:Kick(" Bn ã b banned 1 ngày!")
+	task.wait(1)
+
+	-- KICK
+	player:Kick(" Sóng thn ã cun sch Brainrot ca bn!")
+
+end)
+
+-- Khi player vào li, m bo Brainrot ã b xóa
+Players.PlayerAdded:Connect(function(player)
+
+	local success, result = pcall(function()
+		return dataStore:GetAsync(player.UserId)
+	end)
+
+	if success and result == true then
+		player.CharacterAdded:Wait()
+		local brainrotFolder = player:FindFirstChild("Brainrots")
+		if brainrotFolder then
+			for _, item in pairs(brainrotFolder:GetChildren()) do
+				item:Destroy()
+			end
+		end
+	end
+
 end)
