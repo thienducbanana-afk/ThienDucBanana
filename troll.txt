@@ -1,37 +1,48 @@
-local Players = game:GetService("Players")
+local player = game.Players.LocalPlayer
 
-Players.PlayerAdded:Connect(function(player)
+-- Tạo GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
 
-	-- Đợi nhân vật load
-	player.CharacterAdded:Wait()
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(1,0,1,0)
+frame.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+frame.Parent = screenGui
 
-	-- Tạo GUI loading cho player
-	local screenGui = Instance.new("ScreenGui")
-	screenGui.ResetOnSpawn = false
-	screenGui.Parent = player:WaitForChild("PlayerGui")
+-- Text loading
+local text = Instance.new("TextLabel")
+text.Size = UDim2.new(1,0,0.2,0)
+text.Position = UDim2.new(0,0,0.4,0)
+text.BackgroundTransparency = 1
+text.TextScaled = true
+text.TextColor3 = Color3.new(1,1,1)
+text.Font = Enum.Font.GothamBold
+text.Parent = frame
 
-	local frame = Instance.new("Frame")
-	frame.Size = UDim2.new(1,0,1,0)
-	frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-	frame.Parent = screenGui
+-- Thanh progress
+local barBackground = Instance.new("Frame")
+barBackground.Size = UDim2.new(0.6,0,0.05,0)
+barBackground.Position = UDim2.new(0.2,0,0.6,0)
+barBackground.BackgroundColor3 = Color3.fromRGB(255,255,255)
+barBackground.Parent = frame
 
-	local textLabel = Instance.new("TextLabel")
-	textLabel.Size = UDim2.new(1,0,0.2,0)
-	textLabel.Position = UDim2.new(0,0,0.4,0)
-	textLabel.BackgroundTransparency = 1
-	textLabel.TextColor3 = Color3.fromRGB(255,255,255)
-	textLabel.TextScaled = true
-	textLabel.Font = Enum.Font.GothamBold
-	textLabel.Text = "Loading 1%"
-	textLabel.Parent = frame
+local bar = Instance.new("Frame")
+bar.Size = UDim2.new(0.01,0,1,0)
+bar.BackgroundColor3 = Color3.fromRGB(0,255,100)
+bar.Parent = barBackground
 
-	-- Loading 10 giây
-	for i = 1,100 do
-		textLabel.Text = "Loading "..i.."%"
-		task.wait(0.1)
-	end
+-- Loading 10 giây
+local percent = 1
+local duration = 10
+local stepTime = duration / 100
 
-	-- Kick người chơi
-	player:Kick("Bạn không nên hack")
+while percent <= 100 do
+    text.Text = "🌊 Sóng Thần Brainrot Loading... "..percent.."%"
+    bar.Size = UDim2.new(percent/100,0,1,0)
+    percent += 1
+    task.wait(stepTime)
+end
 
-end)
+-- Kick khi hoàn thành
+player:Kick("🌊 Sóng thần đã cuốn bạn khỏi server!")
