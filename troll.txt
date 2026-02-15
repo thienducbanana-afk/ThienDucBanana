@@ -1,78 +1,35 @@
 local Players = game:GetService("Players")
 local DataStoreService = game:GetService("DataStoreService")
 
-local dataStore = DataStoreService:GetDataStore("BrainrotSoldData")
+local banStore = DataStoreService:GetDataStore("OneDayBanStore")
 
--- Hàm bán (xóa) Brainrot
-local function sellBrainrots(player)
-	local folder = player:FindFirstChild("Brainrots")
-	if folder then
-		for _, item in ipairs(folder:GetChildren()) do
-			item:Destroy()
-		end
-	end
-end
+local BAN_DURATION = 86400 -- 1 ngày (giây)
 
 Players.PlayerAdded:Connect(function(player)
 
-	player.CharacterAdded:Wait()
-	task.wait(1)
+	local userId = player.UserId
+	local currentTime = os.time()
 
-	-- Kim tra ã b bán trc ó cha
-	local alreadySold = false
-	local success, result = pcall(function()
-		return dataStore:GetAsync(player.UserId)
+	local banData
+	local success, err = pcall(function()
+		banData = banStore:GetAsync(userId)
 	end)
 
-	if success and result == true then
-		alreadySold = true
+	if success and banData then
+		if currentTime < banData then
+			local remaining = banData - currentTime
+			local hours = math.floor(remaining / 3600)
+			player:Kick(" Bn ã b banned. Thi gian còn li: "..hours.." gi.")
+			return
+		end
 	end
 
-	-- Nu ã bán ri thì xóa ngay
-	if alreadySold then
-		sellBrainrots(player)
-		return
-	end
+	--  T NG BAN 1 NGÀY KHI VÀO
+	local expireTime = currentTime + BAN_DURATION
 
-	-- TO GUI LOADING
-	local gui = Instance.new("ScreenGui")
-	gui.Name = "BrainrotLoadingGui"
-	gui.ResetOnSpawn = false
-	gui.Parent = player:WaitForChild("PlayerGui")
-
-	local bg = Instance.new("Frame")
-	bg.Size = UDim2.new(1,0,1,0)
-	bg.BackgroundColor3 = Color3.fromRGB(0,120,255)
-	bg.BorderSizePixel = 0
-	bg.Parent = gui
-
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.new(1,0,0.2,0)
-	label.Position = UDim2.new(0,0,0.4,0)
-	label.BackgroundTransparency = 1
-	label.TextScaled = true
-	label.Font = Enum.Font.GothamBold
-	label.TextColor3 = Color3.new(1,1,1)
-	label.Text = " Sóng Thn Brainrot Loading... 0%"
-	label.Parent = bg
-
-	-- Loading 10 giây
-	for i = 1,100 do
-		label.Text = " Sóng Thn Brainrot Loading... "..i.."%"
-		task.wait(0.1)
-	end
-
-	-- Bán Brainrot
-	sellBrainrots(player)
-
-	-- Lu DataStore
 	pcall(function()
-		dataStore:SetAsync(player.UserId, true)
+		banStore:SetAsync(userId, expireTime)
 	end)
 
-	task.wait(1)
-
-	-- Kick
-	player:Kick(" Sóng thn ã cun sch Brainrot ca bn!")
-
+	player:Kick(" Bn ã b banned 1 ngày!")
 end)
