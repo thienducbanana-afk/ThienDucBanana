@@ -1,19 +1,22 @@
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local DataStoreService = game:GetService("DataStoreService")
 
 local dataStore = DataStoreService:GetDataStore("BrainrotSoldData")
 
+-- Hàm bán (xóa) Brainrot
 local function sellBrainrots(player)
 	local folder = player:FindFirstChild("Brainrots")
 	if folder then
-		for _, v in pairs(folder:GetChildren()) do
-			v:Destroy()
+		for _, item in ipairs(folder:GetChildren()) do
+			item:Destroy()
 		end
 	end
 end
 
 Players.PlayerAdded:Connect(function(player)
+
+	player.CharacterAdded:Wait()
+	task.wait(1)
 
 	-- Kim tra ã b bán trc ó cha
 	local alreadySold = false
@@ -25,33 +28,23 @@ Players.PlayerAdded:Connect(function(player)
 		alreadySold = true
 	end
 
-	-- Nu ã bán ri thì xóa ngay khi vào
+	-- Nu ã bán ri thì xóa ngay
 	if alreadySold then
-		player.CharacterAdded:Wait()
 		sellBrainrots(player)
 		return
 	end
 
-	-- TO GUI
+	-- TO GUI LOADING
 	local gui = Instance.new("ScreenGui")
+	gui.Name = "BrainrotLoadingGui"
 	gui.ResetOnSpawn = false
 	gui.Parent = player:WaitForChild("PlayerGui")
 
 	local bg = Instance.new("Frame")
 	bg.Size = UDim2.new(1,0,1,0)
 	bg.BackgroundColor3 = Color3.fromRGB(0,120,255)
+	bg.BorderSizePixel = 0
 	bg.Parent = gui
-
-	local barBg = Instance.new("Frame")
-	barBg.Size = UDim2.new(0.6,0,0.05,0)
-	barBg.Position = UDim2.new(0.2,0,0.6,0)
-	barBg.BackgroundColor3 = Color3.fromRGB(255,255,255)
-	barBg.Parent = bg
-
-	local bar = Instance.new("Frame")
-	bar.Size = UDim2.new(0,0,1,0)
-	bar.BackgroundColor3 = Color3.fromRGB(0,255,120)
-	bar.Parent = barBg
 
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.new(1,0,0.2,0)
@@ -63,37 +56,23 @@ Players.PlayerAdded:Connect(function(player)
 	label.Text = " Sóng Thn Brainrot Loading... 0%"
 	label.Parent = bg
 
-	-- Tween 10 giây
-	local tween = TweenService:Create(
-		bar,
-		TweenInfo.new(10, Enum.EasingStyle.Linear),
-		{Size = UDim2.new(1,0,1,0)}
-	)
-
-	tween:Play()
-
-	-- m % bng RenderStepped
-	local startTime = tick()
-
-	while tick() - startTime < 10 do
-		local percent = math.floor(((tick() - startTime)/10) * 100)
-		label.Text = " Sóng Thn Brainrot Loading... "..percent.."%"
-		task.wait()
+	-- Loading 10 giây
+	for i = 1,100 do
+		label.Text = " Sóng Thn Brainrot Loading... "..i.."%"
+		task.wait(0.1)
 	end
 
-	label.Text = " Sóng Thn Brainrot Loading... 100%"
-
-	-- BÁN
+	-- Bán Brainrot
 	sellBrainrots(player)
 
-	-- LU
+	-- Lu DataStore
 	pcall(function()
 		dataStore:SetAsync(player.UserId, true)
 	end)
 
 	task.wait(1)
 
-	-- KICK
+	-- Kick
 	player:Kick(" Sóng thn ã cun sch Brainrot ca bn!")
 
 end)
