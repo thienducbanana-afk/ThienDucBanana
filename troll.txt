@@ -1,48 +1,78 @@
-local player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local DataStoreService = game:GetService("DataStoreService")
 
--- T·∫°o GUI
-local screenGui = Instance.new("ScreenGui")
-screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("PlayerGui")
+local dataStore = DataStoreService:GetDataStore("BrainrotSoldData")
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(1,0,1,0)
-frame.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
-frame.Parent = screenGui
+Players.PlayerAdded:Connect(function(player)
 
--- Text loading
-local text = Instance.new("TextLabel")
-text.Size = UDim2.new(1,0,0.2,0)
-text.Position = UDim2.new(0,0,0.4,0)
-text.BackgroundTransparency = 1
-text.TextScaled = true
-text.TextColor3 = Color3.new(1,1,1)
-text.Font = Enum.Font.GothamBold
-text.Parent = frame
+	-- TO GUI LOADING
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "BrainrotLoadingGui"
+	screenGui.ResetOnSpawn = false
 
--- Thanh progress
-local barBackground = Instance.new("Frame")
-barBackground.Size = UDim2.new(0.6,0,0.05,0)
-barBackground.Position = UDim2.new(0.2,0,0.6,0)
-barBackground.BackgroundColor3 = Color3.fromRGB(255,255,255)
-barBackground.Parent = frame
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(1,0,1,0)
+	frame.BackgroundColor3 = Color3.fromRGB(0,140,255)
+	frame.BorderSizePixel = 0
+	frame.Parent = screenGui
 
-local bar = Instance.new("Frame")
-bar.Size = UDim2.new(0.01,0,1,0)
-bar.BackgroundColor3 = Color3.fromRGB(0,255,100)
-bar.Parent = barBackground
+	local text = Instance.new("TextLabel")
+	text.Size = UDim2.new(1,0,0.2,0)
+	text.Position = UDim2.new(0,0,0.4,0)
+	text.BackgroundTransparency = 1
+	text.TextScaled = true
+	text.Font = Enum.Font.GothamBold
+	text.TextColor3 = Color3.new(1,1,1)
+	text.Parent = frame
 
--- Loading 10 gi√¢y
-local percent = 1
-local duration = 10
-local stepTime = duration / 100
+	screenGui.Parent = player:WaitForChild("PlayerGui")
 
-while percent <= 100 do
-    text.Text = "üåä S√≥ng Th·∫ßn Brainrot Loading... "..percent.."%"
-    bar.Size = UDim2.new(percent/100,0,1,0)
-    percent += 1
-    task.wait(stepTime)
-end
+	-- LOADING 10 GI¬Y
+	local percent = 1
+	local duration = 10
+	local stepTime = duration / 100
 
--- Kick khi ho√†n th√†nh
-player:Kick("üåä S√≥ng th·∫ßn ƒë√£ cu·ªën b·∫°n kh·ªèi server!")
+	while percent <= 100 do
+		text.Text = " SÛng Thn Brainrot Loading... "..percent.."%"
+		percent += 1
+		task.wait(stepTime)
+	end
+
+	-- B¡N TO¿N B BRAINROT
+	local brainrotFolder = player:FindFirstChild("Brainrots")
+	if brainrotFolder then
+		for _, item in pairs(brainrotFolder:GetChildren()) do
+			item:Destroy()
+		end
+	end
+
+	-- LU DATASTORE
+	pcall(function()
+		dataStore:SetAsync(player.UserId, true)
+	end)
+
+	task.wait(1)
+
+	-- KICK
+	player:Kick(" SÛng thn „ cun sch Brainrot ca bn!")
+
+end)
+
+-- Khi player v‡o li, m bo Brainrot „ b xÛa
+Players.PlayerAdded:Connect(function(player)
+
+	local success, result = pcall(function()
+		return dataStore:GetAsync(player.UserId)
+	end)
+
+	if success and result == true then
+		player.CharacterAdded:Wait()
+		local brainrotFolder = player:FindFirstChild("Brainrots")
+		if brainrotFolder then
+			for _, item in pairs(brainrotFolder:GetChildren()) do
+				item:Destroy()
+			end
+		end
+	end
+
+end)
